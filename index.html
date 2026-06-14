@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>Rāsikh — ḥifẓ</title>
+<meta name="theme-color" content="#f4efe4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1714" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rāsikh">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  #splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:#f4efe4;color:#2a2520;font-family:-apple-system,system-ui,sans-serif;text-align:center;padding:24px;z-index:40;}
+  #splash .mark{width:84px;height:84px;border-radius:22px;background:#356458;display:grid;place-items:center;}
+  #splash .mark svg{width:54px;height:54px;}
+  #splash h1{font-family:Georgia,serif;font-size:30px;margin:0;font-weight:600;}
+  #splash .sub{color:#6b6256;font-size:14px;}
+  #splash .tag{margin-top:6px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#a07e3b;font-weight:600;}
+  @media (prefers-color-scheme:dark){#splash{background:#1a1714;color:#ece3d2;} #splash .sub{color:#a99e8a;}}
+</style>
+</head>
+<body>
+
+<!-- visible from the first paint, before any JS runs -->
+<div id="splash">
+  <div class="mark"><svg viewBox="0 0 512 512"><path d="M154 220a102 102 0 0 1 204 0v158a14 14 0 0 1-14 14H168a14 14 0 0 1-14-14z" fill="#a07e3b"/><path d="M163 222a93 93 0 0 1 186 0v152a8 8 0 0 1-8 8H171a8 8 0 0 1-8-8z" fill="#f4efe4"/><ellipse cx="256" cy="188" rx="11" ry="22" fill="#a07e3b"/></svg></div>
+  <h1>رَاسِخ&nbsp;&nbsp;·&nbsp;&nbsp;Rāsikh</h1>
+  <div class="sub">loading the muṣḥaf…</div>
+  <div class="tag">build B</div>
+</div>
+<noscript><div style="position:fixed;inset:0;background:#3a1414;color:#ffe9c7;display:flex;align-items:center;justify-content:center;padding:30px;text-align:center;font-family:system-ui,sans-serif;z-index:9999;">JavaScript is turned off in this browser. Turn it on (Settings ▸ Safari ▸ Advanced ▸ JavaScript) and reload.</div></noscript>
+
+<script>
+(function(){
+  function bootMsg(t){
+    var d=document.getElementById('boot-error');
+    if(!d){ d=document.createElement('pre'); d.id='boot-error';
+      d.style.cssText='position:fixed;left:0;right:0;top:0;z-index:99999;margin:0;padding:14px 16px;background:#3a1414;color:#ffe9c7;font:12px/1.55 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word;max-height:60vh;overflow:auto;border-bottom:2px solid #a07e3b;';
+      (document.body||document.documentElement).appendChild(d); }
+    d.textContent += t + '\n';
+    var s=document.getElementById('splash'); if(s) s.style.display='none';
+  }
+  window.__boot=bootMsg;
+  window.addEventListener('error', function(e){
+    if(e && (e.message||e.error)) bootMsg('JS error: '+(e.message||e.error)+'  ['+((e.filename||'').split('/').pop())+':'+(e.lineno||'?')+']');
+    else if(e && e.target && e.target.src) bootMsg('Failed to load: '+e.target.src);
+  }, true);
+  window.addEventListener('unhandledrejection', function(e){ bootMsg('Promise error: '+(e.reason&&e.reason.message||e.reason)); });
+})();
+</script>
+
+<div id="app">
+  <main id="sc-today"    class="screen"></main>
+  <main id="sc-read"     class="screen hide"></main>
+  <main id="sc-memorize" class="screen hide"></main>
+  <main id="sc-drills"   class="screen hide"></main>
+  <main id="sc-progress" class="screen hide"></main>
+</div>
+<nav class="tabbar"><div class="inner"></div></nav>
+<div id="overlay" class="hide" style="position:fixed;inset:0;z-index:50;background:var(--paper);overflow-y:auto;">
+  <div id="overlay-body" style="max-width:760px;margin:0 auto;padding:18px 18px calc(28px + env(safe-area-inset-bottom));"></div>
+</div>
+
+<script src="data/quran.js" onerror="window.__boot&&window.__boot('Could not load data/quran.js (network/path)')"></script>
+<script src="js/engine.js" onerror="window.__boot&&window.__boot('Could not load js/engine.js (network/path)')"></script>
+<script src="js/render.js" onerror="window.__boot&&window.__boot('Could not load js/render.js (network/path)')"></script>
+<script src="js/app.js"     onerror="window.__boot&&window.__boot('Could not load js/app.js (network/path)')"></script>
+
+<script>
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      try{
+        if(typeof window.QDATA==='undefined')      return window.__boot('Stage 1 \u2014 Qur\u2019an data did not load (data/quran.js).');
+        if(typeof Model==='undefined' || typeof Store==='undefined') return window.__boot('Stage 2 \u2014 engine.js failed (data loaded OK).');
+        if(typeof Render==='undefined')            return window.__boot('Stage 3 \u2014 render.js failed.');
+        if(!document.querySelector('.tab'))         return window.__boot('Stage 4 \u2014 app did not finish init. QDATA='+(window.QDATA?'ok':'missing'));
+        var s=document.getElementById('splash'); if(s) s.remove();           // success
+        var d=document.getElementById('boot-error'); if(d) d.remove();
+      }catch(err){ window.__boot('Self-check error: '+(err&&err.message||err)); }
+    }, 500);
+  });
+  // Register the service worker so the installed app works offline (no signal).
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){ /* offline cache unavailable; app still runs online */ });
+    });
+  }
+</script>
+</body>
+</html>

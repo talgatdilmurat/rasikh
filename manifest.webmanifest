@@ -1,0 +1,16 @@
+{
+  "name": "Rāsikh — ḥifẓ",
+  "short_name": "Rāsikh",
+  "description": "A focused Qur'an memorization companion: Yā-Sīn and Juzʼ 2 on the Madinah muṣḥaf, with spaced review.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4efe4",
+  "theme_color": "#f4efe4",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
