@@ -1,5 +1,5 @@
-/* Rāsikh service worker — offline-first precache */
-const CACHE = 'rasikh-v1';
+/* Rāsikh service worker — network-first shell, cache-first fonts, offline fallback */
+const CACHE = 'rasikh-v2';
 const ASSETS = [
   './', './index.html',
   './css/app.css',
@@ -21,11 +21,25 @@ self.addEventListener('activate', e => {
 });
 self.addEventListener('fetch', e => {
   if(e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
-      const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(e.request, copy)).catch(()=>{});
+  const isFont = new URL(e.request.url).pathname.indexOf('/fonts/') !== -1;
+
+  if(isFont){
+    // fonts are large and immutable → cache-first (fast, saves bandwidth)
+    e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
+      const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)).catch(()=>{});
       return res;
-    }).catch(()=> caches.match('./index.html')))
+    })));
+    return;
+  }
+
+  // app shell + data → network-first so updates land immediately when online,
+  // falling back to cache offline (and to index.html only for navigations).
+  e.respondWith(
+    fetch(e.request).then(res => {
+      const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)).catch(()=>{});
+      return res;
+    }).catch(()=> caches.match(e.request).then(hit =>
+      hit || (e.request.mode === 'navigate' ? caches.match('./index.html') : Response.error())
+    ))
   );
 });

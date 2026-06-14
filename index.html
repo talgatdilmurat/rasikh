@@ -38,6 +38,9 @@
 <script>
 (function(){
   function bootMsg(t){
+    // After a successful boot, a stray error (often an iOS-masked "Script error." from a
+    // Safari extension or a benign async hiccup) must NOT paint a scary red bar — log it instead.
+    if(window.__booted){ try{ console.error('[rasikh] '+t); }catch(e){} return; }
     var d=document.getElementById('boot-error');
     if(!d){ d=document.createElement('pre'); d.id='boot-error';
       d.style.cssText='position:fixed;left:0;right:0;top:0;z-index:99999;margin:0;padding:14px 16px;background:#3a1414;color:#ffe9c7;font:12px/1.55 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word;max-height:60vh;overflow:auto;border-bottom:2px solid #a07e3b;';
@@ -81,6 +84,7 @@
         if(!document.querySelector('.tab'))         return window.__boot('Stage 4 \u2014 app did not finish init. QDATA='+(window.QDATA?'ok':'missing'));
         var s=document.getElementById('splash'); if(s) s.remove();           // success
         var d=document.getElementById('boot-error'); if(d) d.remove();
+        window.__booted=true;          // stop post-boot stray errors from painting the red bar
       }catch(err){ window.__boot('Self-check error: '+(err&&err.message||err)); }
     }, 500);
   });

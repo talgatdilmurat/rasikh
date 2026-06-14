@@ -131,6 +131,28 @@ const Render = (() => {
   }
   function revealAllWords(container){ container.querySelectorAll('.w.dim').forEach(s=>s.classList.remove('dim')); }
 
+  // Fit-to-width: the muṣḥaf is justified edge-to-edge with non-wrapping lines, so on a
+  // narrow screen a full line overflows and clips. Shrink the glyph size uniformly until the
+  // widest line fits the page. Idempotent (resets first) so it's safe to re-run on resize.
+  function fit(scopeEl){
+    if(!scopeEl) return;
+    const lines = scopeEl.querySelectorAll('.mline');
+    if(!lines.length) return;
+    // Measure left-aligned at the CSS baseline. The lines are centered, so an overflowing line
+    // spills past BOTH edges and scrollWidth alone under-measures it — flex-start pins the content
+    // to the left so scrollWidth captures the full line width.
+    lines.forEach(l => { l.style.fontSize = ''; l.style.justifyContent = 'flex-start'; });
+    let avail = 0, maxW = 0;
+    lines.forEach(l => { if(l.clientWidth > avail) avail = l.clientWidth;
+                         if(l.scrollWidth > maxW)  maxW  = l.scrollWidth; });
+    lines.forEach(l => { l.style.justifyContent = ''; });     // restore centering
+    if(!avail || maxW <= avail) return;                       // already fits — keep the CSS size
+    const base = parseFloat(getComputedStyle(lines[0]).fontSize) || 0;
+    if(!base) return;
+    const size = base * (avail - 1) / maxW;                   // 1px safety against sub-pixel clip
+    lines.forEach(l => { l.style.fontSize = size.toFixed(2) + 'px'; });
+  }
+
   return { registerFonts, page, words, verse, endMarker, wordSpan,
-           veil, reveal, unveil, enablePeek, dimAll, revealNextWord, revealAllWords };
+           veil, reveal, unveil, enablePeek, dimAll, revealNextWord, revealAllWords, fit };
 })();

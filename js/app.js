@@ -148,6 +148,7 @@ function Read(){
     inner.appendChild(Render.page(State.page,{ onWordTap:(w)=>{
       if(w.v) toast(`${fmtVerse(w.v)}`);
     }}));
+    Render.fit(inner);
   });
   const idx = t.pages.indexOf(State.page);
   sheet.appendChild(el('div',{class:'pagefoot',text:`Page ${State.page}`}));
@@ -225,6 +226,7 @@ function Memorize(){
         hiddenLines: rep===0? new Set() : new Set([next.line]),
       });
       inner.appendChild(pageEl);
+      Render.fit(inner);
       // mark the focus line
       const lineEl = pageEl.querySelector(`.mline[data-line="${next.line}"]`);
       if(lineEl){ lineEl.style.outline='2px solid var(--green)'; lineEl.style.outlineOffset='6px';
@@ -257,7 +259,7 @@ function Memorize(){
     clear(ctl);
     Render.registerFonts().then(()=>{ clear(inner);
       const pageEl = Render.page(next.page,{highlightVerses:new Set(next.verses),dimOthers:true});
-      inner.appendChild(pageEl); });
+      inner.appendChild(pageEl); Render.fit(inner); });
     ctl.appendChild(el('div',{class:'sub',style:'margin-bottom:12px;font-size:14px;color:var(--green);font-weight:600',
       text:'Locked in. Add this line to your review cycle?'}));
     ctl.appendChild(el('div',{class:'row',style:'gap:8px'},[
@@ -641,6 +643,10 @@ function init(){
       html:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${svg}</svg><span>${label}</span>`}));
   });
   Render.registerFonts();
+  // re-fit the muṣḥaf to width on rotate / resize
+  window.addEventListener('resize', ()=>{
+    document.querySelectorAll('.screen:not(.hide) .sheet .inner').forEach(el=>Render.fit(el));
+  });
   go('today');
 }
 window.RFONTS = (function(){
